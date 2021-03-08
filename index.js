@@ -80,6 +80,11 @@ class FakeSESServer {
     return this.emails.slice()
   }
 
+  /** @returns {void} */
+  reset () {
+    this.emails = []
+  }
+
   /**
    * @param {number} count
    * @returns {Promise<void>}
@@ -105,6 +110,18 @@ class FakeSESServer {
    * @returns {void}
    */
   handleServerRequest (req, res) {
+    const { method, url } = req;
+
+    if (url === '/_/api/reset' && method === 'POST') {
+      this.reset();
+      return res.writeHead(204).end();
+    }
+
+    if (url === '/_/api/emails' && method === 'GET') {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify(this.emails));
+    }
+
     let body = ''
     req.on('data', (chunk) => {
       body += chunk.toString()
